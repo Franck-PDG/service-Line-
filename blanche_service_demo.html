@@ -1,0 +1,207 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Blanche Service - Démo (exécutable)</title>
+<style>
+  :root{--bg:#f6fbff;--card:#fff;--accent:#0ea5a4;--muted:#6b7280}
+  body{font-family:Inter, system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:#0f172a}
+  header{background:linear-gradient(90deg,#e6fffb,#f0f9ff);padding:28px 20px;border-bottom:1px solid #e6eef5}
+  .container{max-width:1000px;margin:24px auto;padding:0 16px}
+  h1{margin:0;font-size:28px}
+  p.lead{color:var(--muted);margin:6px 0 0}
+  nav{display:flex;gap:12px;margin-top:14px}
+  nav a{padding:8px 12px;border-radius:10px;text-decoration:none;color:#064e3b;background:#ecfeff}
+  section.card{background:var(--card);border-radius:12px;padding:20px;margin-top:18px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+  form{display:grid;gap:10px}
+  input,textarea,button,select{font-family:inherit;font-size:15px;padding:10px;border-radius:10px;border:1px solid #e6eef5}
+  button.primary{background:var(--accent);color:white;border:0;padding:12px 14px;cursor:pointer;border-radius:10px}
+  .flex{display:flex;gap:12px;align-items:center}
+  .muted{color:var(--muted);font-size:14px}
+  .small{font-size:13px;color:#475569}
+  .list{display:flex;flex-wrap:wrap;gap:10px}
+  .pill{background:#ecfeff;padding:8px 12px;border-radius:999px;border:1px solid #a7f3d0;color:#064e3b}
+  .result{background:#f8fffe;border-left:4px solid var(--accent);padding:12px;border-radius:8px}
+  footer{margin:30px 0;text-align:center;color:var(--muted);font-size:13px}
+  @media(max-width:720px){h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>Blanche Service — Démo interactive</h1>
+    <p class="lead">Entreprise 100% en ligne — aperçu fonctionnel. (Fichier local exécutable)</p>
+    <nav>
+      <a href="#accueil">Accueil</a>
+      <a href="#services">Services</a>
+      <a href="#apropos">À propos</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section id="accueil" class="card">
+    <h2>Bienvenue</h2>
+    <p class="small">Blanche Service remplace une structure physique par une plateforme en ligne. Ici tu peux tester :</p>
+    <div class="list" style="margin-top:12px">
+      <div class="pill">Suivi de référence</div>
+      <div class="pill">Formulaire client</div>
+      <div class="pill">Stockage local (démo)</div>
+    </div>
+  </section>
+
+  <section id="services" class="card">
+    <h2>Nos services</h2>
+    <ul class="small">
+      <li>Gestion et suivi de clients en ligne</li>
+      <li>Support et assistance digitale</li>
+      <li>Consulting et solutions sur mesure</li>
+    </ul>
+  </section>
+
+  <section id="apropos" class="card">
+    <h2>À propos</h2>
+    <p class="small">Mission : proposer un service digital complet, avec un tableau de bord pour retrouver facilement les clients à partir de leur référence.</p>
+  </section>
+
+  <section id="contact" class="card">
+    <h2>Formulaire client (pro)</h2>
+    <p class="muted">Remplis ce formulaire. Une référence unique sera générée et stockée localement (démo). Tu pourras ensuite rechercher cette référence dans la section "Suivi".</p>
+
+    <form id="clientForm">
+      <div class="flex" style="gap:8px;flex-direction:column">
+        <input id="nom" placeholder="Nom complet" required />
+        <input id="telephone" placeholder="Téléphone" required />
+        <input id="email" type="email" placeholder="Email" required />
+        <select id="serviceSelect">
+          <option value="consulting">Consulting</option>
+          <option value="support">Support</option>
+          <option value="developpement">Développement</option>
+        </select>
+        <textarea id="message" rows="4" placeholder="Message / détails"></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button type="submit" class="primary">Envoyer et générer référence</button>
+        <button id="clearLocal" type="button">Effacer données locales (démo)</button>
+      </div>
+    </form>
+
+    <div id="formResult" style="margin-top:12px"></div>
+
+    <hr style="margin-top:18px;margin-bottom:12px">
+
+    <h3>Suivi — Rechercher par référence</h3>
+    <p class="small">Colle la référence reçue après envoi (ex : <code>BS-20250826-XYZ123</code>).</p>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="searchRef" placeholder="Entrez la référence" />
+      <button id="btnSearch" class="primary">Rechercher</button>
+    </div>
+    <div id="searchResult" style="margin-top:12px"></div>
+  </section>
+
+  <section class="card">
+    <h2>Admin (démo local)</h2>
+    <p class="small">Ici s'affichent toutes les références stockées localement (demo). Dans la version finale, ces données iraient vers Firebase / Supabase.</p>
+    <div id="adminList" style="margin-top:12px"></div>
+  </section>
+
+  <footer>
+    <div>© 2025 Blanche Service — Démo locale</div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  // util
+  function genRef(){
+    const dt = new Date();
+    const y = dt.getFullYear().toString().slice(2);
+    const mm = String(dt.getMonth()+1).padStart(2,'0');
+    const dd = String(dt.getDate()).padStart(2,'0');
+    const suffix = Math.random().toString(36).slice(2,8).toUpperCase();
+    return `BS-${y}${mm}${dd}-${suffix}`;
+  }
+
+  function loadDB(){
+    try{
+      const raw = localStorage.getItem('bs_clients') || '[]';
+      return JSON.parse(raw);
+    }catch(e){
+      return [];
+    }
+  }
+  function saveDB(arr){
+    localStorage.setItem('bs_clients', JSON.stringify(arr));
+  }
+
+  // form handling
+  const form = document.getElementById('clientForm');
+  const res = document.getElementById('formResult');
+  const adminList = document.getElementById('adminList');
+
+  function renderAdmin(){
+    const data = loadDB();
+    if(!data.length){ adminList.innerHTML = '<div class="small">Aucune donnée pour le moment.</div>'; return; }
+    adminList.innerHTML = data.map(d => {
+      return `<div style="border:1px solid #eef2f7;padding:10px;border-radius:8px;margin-bottom:8px">
+        <div style="font-weight:600">${d.nom} <span style="color:#475569;font-weight:400">(${d.telephone})</span></div>
+        <div class="small">${d.email} — ${d.service}</div>
+        <div class="small" style="margin-top:6px">${d.message}</div>
+        <div style="margin-top:8px"><strong>Réf :</strong> <code>${d.reference}</code></div>
+        <div class="small" style="margin-top:6px;color:#0f172a">Statut: <em>${d.status||'Nouveau'}</em></div>
+      </div>`;
+    }).join('');
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const nom = document.getElementById('nom').value.trim();
+    const telephone = document.getElementById('telephone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const service = document.getElementById('serviceSelect').value;
+    const message = document.getElementById('message').value.trim();
+
+    if(!nom || !telephone || !email) return;
+
+    const db = loadDB();
+    const reference = genRef();
+    const now = new Date().toISOString();
+    const item = { nom, telephone, email, service, message, reference, createdAt: now, status: 'Nouveau' };
+    db.unshift(item);
+    saveDB(db);
+    renderAdmin();
+
+    res.innerHTML = `<div class="result"><strong>Référence générée :</strong> <code>${reference}</code><div class="small" style="margin-top:6px">Conserve cette référence pour le suivi.</div></div>`;
+    form.reset();
+  });
+
+  document.getElementById('btnSearch').addEventListener('click', function(){
+    const q = document.getElementById('searchRef').value.trim().toUpperCase();
+    const sr = document.getElementById('searchResult');
+    if(!q){ sr.innerHTML = '<div class="small">Entre la référence à rechercher.</div>'; return; }
+    const db = loadDB();
+    const found = db.find(x=>x.reference===q);
+    if(!found){ sr.innerHTML = `<div class="small">Aucune entrée trouvée pour <code>${q}</code>.</div>`; return; }
+    sr.innerHTML = `<div class="result">
+      <div style="font-weight:700">${found.nom} — ${found.telephone}</div>
+      <div class="small">${found.email} • ${found.service}</div>
+      <div style="margin-top:6px" class="small">${found.message}</div>
+      <div style="margin-top:8px"><strong>Réf :</strong> <code>${found.reference}</code></div>
+      <div class="small" style="margin-top:6px">Statut: <em>${found.status}</em></div>
+    </div>`;
+  });
+
+  document.getElementById('clearLocal').addEventListener('click', function(){
+    if(confirm('Supprimer toutes les données locales (démo) ?')){ localStorage.removeItem('bs_clients'); renderAdmin(); document.getElementById('formResult').innerHTML=''; document.getElementById('searchResult').innerHTML=''; }
+  });
+
+  // initial render
+  renderAdmin();
+})();
+</script>
+</body>
+</html>
